@@ -1,0 +1,8 @@
+<launch>
+  <arg name="ip_addr" default="0.0.0.0"/>
+  <node pkg="plc_control" exec="control_node" name="control_node"/>
+  <node pkg="plc_control" exec="display_node" name="display_node"/>
+  <node pkg="plc_control" exec="plc_node" name="plc_node">
+  <param name="ip_addr" value="$(var ip_addr)"/>
+  </node>
+</launch>

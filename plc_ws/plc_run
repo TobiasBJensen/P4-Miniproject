@@ -1,0 +1,6 @@
+#!/bin/bash
+source ~/.bashrc
+
+ip_addr=$(ip -4 addr show wlp0s20f3 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+
+ros2 launch plc_control plc_launch.xml ip_addr:=$ip_addr
