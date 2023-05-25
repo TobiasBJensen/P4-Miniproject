@@ -27,26 +27,28 @@ class PLCNode(Node):
         self.display = False
         self.conn = None
         self.data = None
-
-        time.sleep(2)
+        
+        # if tcp_up is set to False then the program is in simulation mode
+        # if tcp_up is set to True then the tcp server is set up
+        self.tcp_up = False
 
         ip = self.get_parameter('ip_addr').get_parameter_value().string_value
         self.get_logger().info(str(ip))
         
-        """
-        HOST = ip
-        PORT = 20000        
-        # Create a socket object
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # Bind the socket to a specific address and port
-        s.bind((HOST, PORT))
-        # Listen for incoming connections
-        s.listen(1)
-        # Wait for a client to connect
-        self.get_logger().info("Waiting for client")
-        conn, addr = s.accept()
-        self.get_logger().info("Client connected")
-        """
+        if self.tcp_up:
+            HOST = ip
+            PORT = 20000        
+            # Create a socket object
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # Bind the socket to a specific address and port
+            s.bind((HOST, PORT))
+            # Listen for incoming connections
+            s.listen(1)
+            # Wait for a client to connect
+            self.get_logger().info("Waiting for client")
+            conn, addr = s.accept()
+            self.get_logger().info("Client connected")
+
 
         self.timer = self.create_timer(1, self.pub_check)
         self.get_logger().info("Any out there?")
@@ -74,13 +76,14 @@ class PLCNode(Node):
 
 
     def tcp_recv_carrier(self):
-        time.sleep(5)
+        if not self.tcp_up:
+            time.sleep(5)
+            xml_msg = "<carrier><id>8</id><Station>2</Station><time>DT#time</time></carrier>\x00"
+            self.data = bytes(xml_msg, 'utf-8')
 
-        xml_msg = "<carrier><id>8</id><Station>2</Station><time>DT#time</time></carrier>\x00"
-        self.data = bytes(xml_msg, 'utf-8')
-
-        # Receive data from the client
-        #data = self.conn.recv(1024)
+        if self.tcp_up:
+            # Receive data from the client
+            self.data = self.conn.recv(1024)
 
         # Process the data
         self.xmlCarrier()
@@ -126,23 +129,28 @@ class PLCNode(Node):
         # Converts string to bytes
         newData = bytes(f'<time>{msg.est_time}</time>', 'utf-8')
 
-        # Sends answer to client(plc)
-        #conn.send(newData)
+        if not self.tcp_up:
+            time.sleep(2)
+
+        if self.tcp_up:
+            # Sends answer to client(plc)
+            self.conn.send(newData)
 
         self.get_logger().info('Recive Est Time: "%s"' % msg.est_time)
 
-        time.sleep(1)
         self.tcp_recv_time()
 
 
     def tcp_recv_time(self):
         msg = Time()
-
-        xml_msg = "<time>DT#time</time>\x00"
-        self.data = bytes(xml_msg, 'utf-8')
         
-        # Receive data from the client
-        #data = self.conn.recv(1024)
+        if not self.tcp_up:
+            xml_msg = "<time>DT#time</time>\x00"
+            self.data = bytes(xml_msg, 'utf-8')
+        
+        if self.tcp_up:
+            # Receive data from the client
+            self.data = self.conn.recv(1024)
 
         re_msg = str(self.data)
 
