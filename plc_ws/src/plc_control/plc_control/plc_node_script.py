@@ -38,6 +38,7 @@ class PLCNode(Node):
         # From the start the other nodes are set to not turned on, until we recieve information that they are turned on
         self.control = False
         self.display = False
+
         self.conn = None
         self.data = None
 
@@ -64,12 +65,10 @@ class PLCNode(Node):
             conn, addr = s.accept()
             self.get_logger().info("Client connected")
 
-
         # We create a timer that every 1 milisec checks the function pub_check to see if the other nodes are running
         # We log the messege "Any out there?" as an indication of that we are looking to see if our nodes are running
         self.timer = self.create_timer(1, self.pub_check)
         self.get_logger().info("Any out there?")
-            
 
     # The function for checking whether the other nodes are running
     def pub_check(self):
@@ -98,8 +97,6 @@ class PLCNode(Node):
             self.get_logger().info("All nodes ready")
             self.tcp_recv_carrier()
 
-
-
     def tcp_recv_carrier(self):
         if not self.tcp_up:
             # We sleep to simulate waiting for the message
@@ -117,7 +114,6 @@ class PLCNode(Node):
 
         # When we have the data that we totally recieved from the PLC we send it to processing
         self.xmlCarrier()
-
 
     def xmlCarrier(self):
         # We make msg of the datatype of the Carrier topic
