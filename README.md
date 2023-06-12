@@ -7,9 +7,10 @@ To get the ros2 nodes up and working.
 
 The program can be launched in 2 ways.
 First is.
+1. In the terminal, go to plc_ws folder
+2. run "./plc_run"
+
+If the first dose not work try.
 1. Check the ip addr that will be used for the tcp connection
 2. "ros2 launch plc_control plc_control ip_addr:='The ip addr found earlier'"
 
-Second is.
-1. In the terminal, go to plc_ws folder
-2. run "./plc_run"
